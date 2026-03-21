@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension xmlns="http://ns.adobe.com/air/extension/22.0">
+    <id>com.fluocode.nativeANE.NativeUtilities</id>
+    <versionNumber>1.3.1</versionNumber>
+    <platforms>
+        <platform name="Android-ARM">
+            <applicationDeployment>
+                <nativeLibrary>libNativeDialogs.jar</nativeLibrary>
+                <initializer>com.fluocode.nativeANE.NativeDialogsExtension</initializer>
+                <finalizer>com.fluocode.nativeANE.NativeDialogsExtension</finalizer>
+            </applicationDeployment>
+        </platform>
+        <platform name="Android-ARM64">
+            <applicationDeployment>
+                <nativeLibrary>libNativeDialogs.jar</nativeLibrary>
+                <initializer>com.fluocode.nativeANE.NativeDialogsExtension</initializer>
+                <finalizer>com.fluocode.nativeANE.NativeDialogsExtension</finalizer>
+            </applicationDeployment>
+        </platform>
+        <platform name="Android-x86">
+            <applicationDeployment>
+                <nativeLibrary>libNativeDialogs.jar</nativeLibrary>
+                <initializer>com.fluocode.nativeANE.NativeDialogsExtension</initializer>
+                <finalizer>com.fluocode.nativeANE.NativeDialogsExtension</finalizer>
+            </applicationDeployment>
+        </platform>
+        <platform name="iPhone-ARM">
+            <applicationDeployment>
+                <nativeLibrary>libNativeDialogs.a</nativeLibrary>
+                <initializer>NativeDialogsExtInitializer</initializer>
+                <finalizer>NativeDialogsExtFinalizer</finalizer>
+            </applicationDeployment>
+        </platform>
+        <platform name="iPhone-x86">
+            <applicationDeployment>
+                <nativeLibrary>libNativeDialogs.a</nativeLibrary>
+                <initializer>NativeDialogsExtInitializer</initializer>
+                <finalizer>NativeDialogsExtFinalizer</finalizer>
+            </applicationDeployment>
+        </platform>
+        <platform name="default">
+            <applicationDeployment/>
+        </platform>
+    </platforms>
+</extension>
+
