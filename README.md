@@ -366,3 +366,8 @@ If you integrate **other** SDKs in the same app, manage those keys according to 
 ---
 
 <p align="center">Made for apps that need native look & feel on mobile 🚀</p>
+
+***
+If You like what I make please donate:
+[![Foo](https://www.paypalobjects.com/en_GB/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4QBWVDKEVRL46)
+*** 	
