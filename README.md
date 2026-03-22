@@ -518,7 +518,9 @@ NativeUtilities.context.addEventListener(StatusEvent.STATUS, function (e:StatusE
 
 ### Security, identity, and haptics
 
-#### `NativeUtilities.blockScreenshot(block)`
+**Security** → `blockScreenshot`. **Identity** → `getDeviceUniqueId`. **Haptics** → `vibrate` / `vibratePattern`. Each block below is ready to paste; adjust arguments as needed.
+
+#### `NativeUtilities.blockScreenshot(block)` — security
 
 **What it does:** When `true`, blocks screenshots and screen recording where supported (Android `FLAG_SECURE`; iOS uses an overlay-style approach when backgrounding).
 
@@ -526,37 +528,60 @@ NativeUtilities.context.addEventListener(StatusEvent.STATUS, function (e:StatusE
 
 **Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
 
-#### `NativeUtilities.getDeviceUniqueId()`
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
 
-**What it does:** Returns a **string** ID: Android uses **`ANDROID_ID`** (hex) with fallback; iOS uses **`identifierForVendor`**. May be empty if unavailable. Treat as **device-scoped**, not guaranteed forever unchanged (factory reset, vendor app uninstall, etc.).
+if (!NativeUtilities.isSupported) return;
+NativeUtilities.blockScreenshot(true);  // true = block capture, false = allow
+```
+
+#### `NativeUtilities.getDeviceUniqueId()` — identity
+
+**What it does:** Returns a **string** ID: Android uses **`ANDROID_ID`** (hex) with fallback; iOS uses **`identifierForVendor`**. May be empty if unavailable. Treat as **device-scoped**; it can change after factory reset, or on iOS if all apps from the same vendor are uninstalled.
 
 **Platforms:** Android, iOS
 
 **Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
 
-#### `NativeUtilities.vibrate(durationMs)`
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
 
-**What it does:** **Android:** vibrates for **1–5000 ms** (values clamped). **iOS:** short system vibration; duration is ignored.
+if (!NativeUtilities.isSupported) return;
+var id:String = NativeUtilities.getDeviceUniqueId();
+```
 
-**Platforms:** Android, iOS  
+#### `NativeUtilities.vibrate(durationMs)` — haptics
+
+**What it does:** **Android:** vibrates for **1–5000 ms** (values clamped). **iOS:** short system vibration; `durationMs` is ignored.
+
+**Platforms:** Android, iOS
+
 **Android:** requires **`android.permission.VIBRATE`** in the merged manifest (see **Android manifest** below).
 
 **Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
 
-#### `NativeUtilities.vibratePattern(pattern)`
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
 
-**What it does:** **Android:** native waveform from an **Array** / Vector: **`[delay, vibrate, delay, vibrate, …]`** (even length, ≥ 2). **iOS:** emulated with timed calls to the short vibrate.
+if (!NativeUtilities.isSupported) return;
+NativeUtilities.vibrate(200);  // ms on Android; default 200 if omitted
+```
 
-**Platforms:** Android, iOS  
+#### `NativeUtilities.vibratePattern(pattern)` — haptics
+
+**What it does:** **Android:** native waveform from an **Array** or Vector: **`[delay, vibrate, delay, vibrate, …]`** (even length, length ≥ 2). **iOS:** emulated with timed short vibrates.
+
+**Platforms:** Android, iOS
+
 **Android:** requires **`VIBRATE`** permission.
 
 **Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
 
-**Example:**
-
 ```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
+
 if (!NativeUtilities.isSupported) return;
-NativeUtilities.vibratePattern([0, 100, 50, 100]);
+NativeUtilities.vibratePattern([0, 100, 50, 100]);  // wait 0, vibrate 100ms, wait 50, vibrate 100ms
 ```
 
 ---
