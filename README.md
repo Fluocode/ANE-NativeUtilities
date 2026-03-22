@@ -1,6 +1,6 @@
 # 🧩 NativeUtilities ANE for Adobe AIR
 
-**NativeUtilities** is an Native Extension that brings **native UI and system APIs** to your mobile app: alerts, lists, date/time pickers, text input dialogs, progress overlays, wheel pickers, toasts, and utilities such as status/navigation bar styling, display cutouts, screenshot protection, vibration, brightness, and device identifiers—on **Android** and **iOS**.
+**NativeUtilities** is a native extension that brings **native UI and system APIs** to your mobile app: alerts, lists, date/time pickers, text input dialogs, progress overlays, wheel pickers, toasts, and utilities such as status/navigation bar styling, display cutouts, screenshot protection, vibration, brightness, and device identifiers—on **Android** and **iOS**.
 
 ---
 
@@ -184,52 +184,328 @@ dlg.show(true);
 
 ---
 
-## 🛠️ NativeUtilities — snippets
+## 🛠️ NativeUtilities — reference
 
-Always guard with **`NativeUtilities.isSupported`** before calling.
-
-### Bars, fullscreen, and color (mostly Android for color / nav)
+Use the extension only on supported runtimes. **Before any native call**, check support (and optionally bail early):
 
 ```actionscript
 import com.fluocode.nativeANE.utilities.NativeUtilities;
 
-NativeUtilities.getStatusBarHeight();
-NativeUtilities.isDarkMode();
-NativeUtilities.statusBarStyleLight(true);
-NativeUtilities.statusBarColor(0xFF000000);
-NativeUtilities.statusBarTransparent();
-NativeUtilities.navigationBarColor(0xFF000000);
-NativeUtilities.navigationBarTransparent();
-NativeUtilities.navigationBarStyleLight(true);
-NativeUtilities.hideNavigation(true);
-NativeUtilities.fullscreen(true);
-NativeUtilities.setTranslucentNavigation();
-NativeUtilities.hideWindowStatusBar();
+if (!NativeUtilities.isSupported) {
+  return;
+}
 ```
 
-### Display cutout, layout, and brightness
+**Default import for the APIs below:** `import com.fluocode.nativeANE.utilities.NativeUtilities;`  
+Additional imports are noted only when you need types from other packages (`DisplayCutout`, `DisplayMode`, `LayoutMode`, `StatusEvent`, `Rectangle`, etc.).
+
+---
+
+### Support, version, and extension context
+
+#### `NativeUtilities.isSupported` (getter)
+
+**What it does:** Returns `true` on iOS and Android builds where this ANE is usable; `false` elsewhere (e.g. desktop simulators without the native lib).
+
+**Import:**
 
 ```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
+```
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+```
+
+#### `NativeUtilities.EXTENSION_ID` / `NativeUtilities.VERSION`
+
+**What it does:** `EXTENSION_ID` is the string to declare in your app descriptor (`com.fluocode.nativeANE.NativeUtilities`). `VERSION` matches the ANE package version.
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.context`
+
+**What it does:** Lazily creates and returns the shared `ExtensionContext` used for native calls. Listeners (e.g. `StatusEvent.STATUS` for UI visibility) attach here.
+
+**Import:**
+
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
+import flash.external.ExtensionContext;
+```
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+var ctx:ExtensionContext = NativeUtilities.context;
+```
+
+#### `NativeUtilities.showError(message, id)`
+
+**What it does:** Throws an `Error` prefixed with the extension ID—used internally when a static call fails.
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+---
+
+### Status bar, navigation bar, fullscreen, and colors
+
+Bar **background color** and most **navigation bar** APIs are **Android-only** (they no-op or return early on iOS). **Status bar icon/text style** and **dark mode** apply on both platforms where the OS allows it.
+
+#### `NativeUtilities.getStatusBarHeight()`
+
+**What it does:** Returns the status bar height as a **Number** (pixels on Android; on iOS the native value is adjusted in AS—use for layout padding). Returns **-1** if unavailable.
+
+**Platforms:** Android, iOS
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+var h:Number = NativeUtilities.getStatusBarHeight();
+```
+
+#### `NativeUtilities.isDarkMode()`
+
+**What it does:** Returns whether the system UI is using a **dark theme** (dark mode).
+
+**Platforms:** Android, iOS
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+var dark:Boolean = NativeUtilities.isDarkMode();
+```
+
+#### `NativeUtilities.statusBarStyleLight(light)`
+
+**What it does:** Sets status bar **content** (icons/text) to a **light** style (`true`, e.g. on dark backgrounds) or **dark** style (`false`).
+
+**Platforms:** Android, iOS
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+NativeUtilities.statusBarStyleLight(true);
+```
+
+#### `NativeUtilities.statusBarColor(color)`
+
+**What it does:** Sets the status bar **background** color (`uint` RGB, e.g. `0xFF000000`).
+
+**Platforms:** **Android only** (no-op on iOS)
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+NativeUtilities.statusBarColor(0xFF000000);
+```
+
+#### `NativeUtilities.statusBarTransparent()`
+
+**What it does:** Makes the status bar **transparent** so content can show through (typical with edge-to-edge layouts).
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.navigationBarColor(color)`
+
+**What it does:** Sets the navigation bar **background** color (`uint` RGB).
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.navigationBarTransparent()`
+
+**What it does:** Makes the navigation bar **transparent**.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.navigationBarStyleLight(light)`
+
+**What it does:** Sets navigation bar **icons** to light (`true`) or dark (`false`) style.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.hideNavigation(light)`
+
+**What it does:** Controls whether content extends into the navigation bar area per native behavior (`true` / `false`). The ActionScript parameter is named `light` in the API; it maps to the native `hideNavigation` call.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.fullscreen(mode)`
+
+**What it does:** Enables (`true`) or disables (`false`) **fullscreen** window mode (Android window decor).
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.setTranslucentNavigation()`
+
+**What it does:** Makes the navigation bar **translucent** (API 19+ behavior on Android).
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.hideWindowStatusBar()`
+
+**What it does:** Hides the status bar at the **window** level so it stays hidden when other native surfaces (e.g. dialogs) appear—unlike toggling flags on a single view only.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+---
+
+### Display cutout, brightness, display mode, and window insets
+
+#### `NativeUtilities.getDisplayCutout()`
+
+**What it does:** Returns a **`DisplayCutout`** with safe insets and cutout geometry parsed from native JSON, or `null` if unavailable.
+
+**Platforms:** Android, iOS
+
+**Import:**
+
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
 import com.fluocode.nativeANE.display.DisplayCutout;
+```
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+var cutout:DisplayCutout = NativeUtilities.getDisplayCutout();
+```
+
+#### `NativeUtilities.displayCutoutRects` (getter)
+
+**What it does:** Returns a **`Vector.<Rectangle>`** of cutout bounds in **window** coordinates, or `null` on non-Android.
+
+**Platforms:** **Android only** (else `null`)
+
+**Import:**
+
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
+import flash.geom.Rectangle;
+```
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+var rects:Vector.<Rectangle> = NativeUtilities.displayCutoutRects;
+```
+
+#### `NativeUtilities.setCutoutMode(mode)`
+
+**What it does:** Sets how the window lays out relative to display cutouts. Use constants: **`CUTOUTMODE_DEFAULT`**, **`CUTOUTMODE_SHORT_EDGES`**, **`CUTOUTMODE_NEVER`**.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.setBrightness(value)`
+
+**What it does:** Sets window brightness: **0..1**, or **-1** to restore the user’s system preference.
+
+**Platforms:** Android, iOS
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.setDisplayMode(displayMode, layoutMode)`
+
+**What it does:** Sets **display mode** (`DisplayMode.NORMAL`, `FULLSCREEN`, `IMMERSIVE`) and **cutout layout** (`LayoutMode.*`). Returns `true` if the native call succeeded. On iOS, fullscreen is often used together with `Stage.displayState`; cutout layout mainly affects Android.
+
+**Platforms:** Android, iOS
+
+**Import:**
+
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
 import com.fluocode.nativeANE.display.DisplayMode;
 import com.fluocode.nativeANE.display.LayoutMode;
-import flash.geom.Rectangle;
-
-var cutout:DisplayCutout = NativeUtilities.getDisplayCutout();
-var rects:Vector.<Rectangle> = NativeUtilities.displayCutoutRects;
-NativeUtilities.setCutoutMode(NativeUtilities.CUTOUTMODE_SHORT_EDGES);
-NativeUtilities.setBrightness(0.5); // 0..1, or -1 for system default
-NativeUtilities.setDisplayMode(DisplayMode.IMMERSIVE, LayoutMode.CUTOUT_NEVER);
-NativeUtilities.setDecorFitsSystemWindows(true); // Android: content below system bars
 ```
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
+NativeUtilities.setDisplayMode(DisplayMode.IMMERSIVE, LayoutMode.CUTOUT_NEVER);
+```
+
+#### `NativeUtilities.setDecorFitsSystemWindows(fit)`
+
+**What it does:** **Android:** maps to `WindowCompat.setDecorFitsSystemWindows`—`true` lays content **below** system bars; `false` is edge-to-edge (you pad using `getStatusBarHeight()` / `getDisplayCutout()`). **iOS:** no-op for this path.
+
+**Platforms:** **Android only** (meaningful)
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`  
+(See also **Edge-to-edge on Android** below for when to call it.)
+
+---
 
 ### System UI visibility (Android)
 
-```actionscript
-import flash.events.StatusEvent;
+#### `NativeUtilities.setUIVisibility(flags)`
 
-var flags:Vector.<int> = NativeUtilities.supportedUIFlags;
-NativeUtilities.setUIVisibility(/* View.SYSTEM_UI_FLAG_* */ 0);
+**What it does:** Applies a bitmask of Android **`View.SYSTEM_UI_FLAG_*`** values for status/navigation visibility and immersive behavior.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.supportedUIFlags` (getter)
+
+**What it does:** Returns a **`Vector.<int>`** of UI flag values supported on this device/build; empty on non-Android.
+
+**Platforms:** **Android only**
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.enableUIVisibilityListener(enable)`
+
+**What it does:** When `true`, registers a native listener so the extension can dispatch **`StatusEvent.STATUS`** when the user shows/hides system bars (e.g. swipe in immersive mode). Use **`NativeUtilities.UI_VISIBILITY_CHANGE_EVENT`** as `event.code`; **`int(event.level)`** holds the visibility flags.
+
+**Platforms:** **Android only**
+
+**Import:**
+
+```actionscript
+import com.fluocode.nativeANE.utilities.NativeUtilities;
+import flash.events.StatusEvent;
+```
+
+**Example:**
+
+```actionscript
+if (!NativeUtilities.isSupported) return;
 NativeUtilities.enableUIVisibilityListener(true);
 NativeUtilities.context.addEventListener(StatusEvent.STATUS, function (e:StatusEvent):void {
   if (e.code == NativeUtilities.UI_VISIBILITY_CHANGE_EVENT) {
@@ -238,19 +514,49 @@ NativeUtilities.context.addEventListener(StatusEvent.STATUS, function (e:StatusE
 });
 ```
 
+---
+
 ### Security, identity, and haptics
 
+#### `NativeUtilities.blockScreenshot(block)`
+
+**What it does:** When `true`, blocks screenshots and screen recording where supported (Android `FLAG_SECURE`; iOS uses an overlay-style approach when backgrounding).
+
+**Platforms:** Android, iOS
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.getDeviceUniqueId()`
+
+**What it does:** Returns a **string** ID: Android uses **`ANDROID_ID`** (hex) with fallback; iOS uses **`identifierForVendor`**. May be empty if unavailable. Treat as **device-scoped**, not guaranteed forever unchanged (factory reset, vendor app uninstall, etc.).
+
+**Platforms:** Android, iOS
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.vibrate(durationMs)`
+
+**What it does:** **Android:** vibrates for **1–5000 ms** (values clamped). **iOS:** short system vibration; duration is ignored.
+
+**Platforms:** Android, iOS  
+**Android:** requires **`android.permission.VIBRATE`** in the merged manifest (see **Android manifest** below).
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+#### `NativeUtilities.vibratePattern(pattern)`
+
+**What it does:** **Android:** native waveform from an **Array** / Vector: **`[delay, vibrate, delay, vibrate, …]`** (even length, ≥ 2). **iOS:** emulated with timed calls to the short vibrate.
+
+**Platforms:** Android, iOS  
+**Android:** requires **`VIBRATE`** permission.
+
+**Import:** `com.fluocode.nativeANE.utilities.NativeUtilities`
+
+**Example:**
+
 ```actionscript
-NativeUtilities.blockScreenshot(true);
-var id:String = NativeUtilities.getDeviceUniqueId();
-NativeUtilities.vibrate(200);
+if (!NativeUtilities.isSupported) return;
 NativeUtilities.vibratePattern([0, 100, 50, 100]);
-```
-
-### Errors from static helpers
-
-```actionscript
-NativeUtilities.showError("Something failed", 0); // throws Error with ANE prefix
 ```
 
 ---
@@ -331,7 +637,22 @@ Toast.dispose(); // release extension context when done
 
 ### Android
 
-The ANE is built with **`VIBRATE`** so **`NativeUtilities.vibrate()` / `vibratePattern()`** can run on devices that expose the vibrator. When you package your app, AIR **merges** the extension’s manifest with yours—if you use custom manifest merging, ensure **`android.permission.VIBRATE`** remains present for vibration.
+The ANE’s library manifest includes **`android.permission.VIBRATE`** so **`NativeUtilities.vibrate()`** and **`NativeUtilities.vibratePattern()`** can run on devices that expose the vibrator. When you package your app, AIR **merges** the extension manifest with yours. If you use **custom** `manifestAdditions` or a merge setup that **drops** inherited permissions, ensure **`VIBRATE`** stays in the final APK.
+
+**Example — keep vibration working in your AIR application descriptor** (`<android>` inside your `*-app.xml`). Add or preserve the permission inside `<manifest>`:
+
+```xml
+<android>
+  <manifestAdditions><![CDATA[
+    <manifest android:installLocation="auto">
+      <uses-permission android:name="android.permission.VIBRATE"/>
+      <!-- Your other permissions, activities, etc. -->
+    </manifest>
+  ]]></manifestAdditions>
+</android>
+```
+
+If you already have a `<manifest>...</manifest>` block, **merge** this line with your existing permissions instead of duplicating the whole `<manifest>` element.
 
 You do **not** need extra permissions for features such as:
 
@@ -367,7 +688,8 @@ If you integrate **other** SDKs in the same app, manage those keys according to 
 
 <p align="center">Made for apps that need native look & feel on mobile 🚀</p>
 
-***
-If You like what I make please donate:
-[![Foo](https://www.paypalobjects.com/en_GB/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4QBWVDKEVRL46)
-*** 	
+---
+
+If you like what I make, you can donate:
+
+[![Donate with PayPal](https://www.paypalobjects.com/en_GB/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4QBWVDKEVRL46)
